@@ -13,3 +13,4 @@ Introduction/Format:
 
 Motion Canvas Details:
   - npm start = host a local server
+  - To edit the amount of scenes available, you must adjust the default setting in project.ts 
