@@ -14,10 +14,14 @@ import {
   createRef,
   easeInOutCubic,
   linear,
+  loop,
   waitFor,
 } from '@motion-canvas/core';
 
 import conveyorBelt from '../assets/noBoxConvey.png';
+import secondConveyorBelt from '../assets/noBoxConvey2.png';
+import truckImage from '../assets/truck.png';
+
 import dnaBoxImage from '../assets/DNABox.png';
 import plantCellImage from '../assets/plantCell.png';
 import moneyImage from '../assets/Money.png';
@@ -34,74 +38,81 @@ export default makeScene2D(function* (view) {
   // REFERENCES
   // ============================================================
 
-  const conveyorGroup = createRef<Node>();
+  const productionSystem = createRef<Node>();
+  const truck = createRef<Img>();
   const objectFlow = createRef<Node>();
-  const tankTracks = createRef<Node>();
 
-  const rollers = Array.from(
-    {length: 14},
-    () => createRef<Node>(),
-  );
+  const upperTracks = createRef<Node>();
+  const lowerTracks = createRef<Node>();
 
-  /*
-   * Shifted 16px left to match the centers of the original
-   * coral rollers shown in the screenshot.
-   */
-  const rollerPositions = [
-    -772,
-    -655,
-    -538,
-    -421,
-    -304,
-    -187,
-    -70,
-    47,
-    164,
-    281,
-    398,
-    515,
-    632,
-    749,
+  const rollers = Array.from({length: 15}, () => createRef<Node>());
+
+  // ============================================================
+  // LAYOUT
+  // ============================================================
+
+  const productionSystemX = 100;
+
+  // Your individually adjusted coordinates — unchanged.
+  const rollerPoints = [
+    {x: -755, y: 54},
+    {x: -637, y: 54},
+    {x: -520, y: 54},
+    {x: -403, y: 54},
+    {x: -287, y: 54},
+    {x: -172, y: 54},
+    {x: -57, y: 54},
+    {x: 58, y: 54},
+    {x: 175, y: 54},
+    {x: 289, y: 54},
+    {x: 397, y: 54},
+    {x: 513, y: 54},
+    {x: 627, y: 54},
+    {x: 743, y: 54},
+    {x: 860, y: 54},
   ];
 
-  /*
-   * Vertical tank-track lines.
-   * Extra lines are included outside the visible belt so they
-   * continue moving through the clipped area.
-   */
-  const trackLinePositions = Array.from(
-    {length: 49},
-    (_, index) => -960 + index * 40,
+  const trackPositions = Array.from(
+    {length: 101},
+    (_, index) => -2000 + index * 40,
   );
 
   // ============================================================
-  // ROTATING RED ROLLER
+  // MATCHED MOVEMENT VALUES
+  // ============================================================
+
+  const movementDuration = 16;
+  const objectTravelDistance = 4200;
+  const rollerDiameter = 80;
+
+  // Matches the rollers' edge speed to the objects' movement speed.
+  const matchedRollerRotation =
+    -(objectTravelDistance / (rollerDiameter * Math.PI)) * 360;
+
+  // ============================================================
+  // ROTATING ROLLER
   // ============================================================
 
   const rotatingRoller = (
     ref: ReturnType<typeof createRef<Node>>,
-    x: number,
+    point: {x: number; y: number},
   ) => (
-    <Node ref={ref} x={x} y={55}>
-      {/* Thicker ring matching the original coral color */}
-
+    <Node ref={ref} x={point.x} y={point.y}>
       <Circle
-        size={78}
+        size={80}
         fill={'rgba(0, 0, 0, 0)'}
-        stroke={'#F2656B'}
-        lineWidth={9}
+        stroke={'#FF626A'}
+        lineWidth={10}
       />
-
-      {/* Smaller rotating cross */}
 
       <Line
         points={[
           [-10, 0],
           [10, 0],
         ]}
-        stroke={'#C84750'}
+        stroke={'#C84850'}
         lineWidth={3}
-        lineCap="round"
+        lineCap={'round'}
       />
 
       <Line
@@ -109,15 +120,12 @@ export default makeScene2D(function* (view) {
           [0, -10],
           [0, 10],
         ]}
-        stroke={'#C84750'}
+        stroke={'#C84850'}
         lineWidth={3}
-        lineCap="round"
+        lineCap={'round'}
       />
 
-      <Circle
-        size={6}
-        fill={'#C84750'}
-      />
+      <Circle size={6} fill={'#C84850'} />
     </Node>
   );
 
@@ -128,10 +136,12 @@ export default makeScene2D(function* (view) {
   view.add(
     <Node>
       {/* ====================================================== */}
-      {/* CONVEYOR */}
+      {/* COMPLETE CONVEYOR SYSTEM */}
       {/* ====================================================== */}
 
-      <Node ref={conveyorGroup}>
+      <Node ref={productionSystem} x={productionSystemX}>
+        {/* MAIN CONVEYOR */}
+
         <Img
           src={conveyorBelt}
           width={1800}
@@ -143,171 +153,206 @@ export default makeScene2D(function* (view) {
           shadowOffsetY={14}
         />
 
-        {/* ==================================================== */}
-        {/* VERTICAL TANK-TRACK LINES */}
-        {/* ==================================================== */}
+        {/* SECOND CONVEYOR */}
+
+        <Img
+          src={secondConveyorBelt}
+          width={1800}
+          height={1200}
+          x={800}
+          y={80}
+        />
+
+        {/* MOVING GREY TREADS */}
 
         <Rect
-          width={1740}
-          height={112}
-          x={0}
+          width={3200}
+          height={108}
+          x={770}
           y={55}
-          radius={55}
+          radius={54}
           fill={'rgba(0, 0, 0, 0)'}
           clip
         >
-          <Node ref={tankTracks}>
-            {trackLinePositions.map((x, index) => (
+          <Node ref={upperTracks}>
+            {trackPositions.map((x, index) => (
               <Line
-                key={`tank-track-${index}`}
+                key={`upper-track-${index}`}
                 points={[
                   [x, -50],
+                  [x, -38],
+                ]}
+                stroke={'rgba(61, 70, 76, 0.72)'}
+                lineWidth={3}
+                lineCap={'round'}
+              />
+            ))}
+          </Node>
+
+          <Node ref={lowerTracks}>
+            {trackPositions.map((x, index) => (
+              <Line
+                key={`lower-track-${index}`}
+                points={[
+                  [x, 38],
                   [x, 50],
                 ]}
-                stroke={'rgba(89, 98, 104, 0.56)'}
+                stroke={'rgba(61, 70, 76, 0.72)'}
                 lineWidth={3}
-                lineCap="round"
+                lineCap={'round'}
               />
             ))}
           </Node>
         </Rect>
 
-        {/* ==================================================== */}
-        {/* ALIGNED RED ROLLER OVERLAYS */}
-        {/* ==================================================== */}
+        {/* FIFTEEN INDIVIDUALLY POSITIONED ROLLERS */}
 
-        {rollerPositions.map((x, index) =>
-          rotatingRoller(rollers[index], x),
+        {rollerPoints.map((point, index) =>
+          rotatingRoller(rollers[index], point),
         )}
+
+        {/* MOVING OBJECTS */}
+
+        <Node ref={objectFlow}>
+          <Img
+            src={dnaBoxImage}
+            width={170}
+            height={127}
+            x={1100}
+            y={-78}
+            shadowBlur={18}
+            shadowColor={'rgba(35, 45, 55, 0.30)'}
+            shadowOffsetY={10}
+          />
+
+          <Img
+            src={dnaBoxImage}
+            width={170}
+            height={127}
+            x={1480}
+            y={-78}
+            shadowBlur={18}
+            shadowColor={'rgba(35, 45, 55, 0.30)'}
+            shadowOffsetY={10}
+          />
+
+          <Img
+            src={dnaBoxImage}
+            width={170}
+            height={127}
+            x={1860}
+            y={-78}
+            shadowBlur={18}
+            shadowColor={'rgba(35, 45, 55, 0.30)'}
+            shadowOffsetY={10}
+          />
+
+          <Img
+            src={plantCellImage}
+            width={155}
+            height={155}
+            x={2240}
+            y={-58}
+            shadowBlur={20}
+            shadowColor={'rgba(48, 80, 58, 0.30)'}
+            shadowOffsetY={10}
+          />
+
+          <Img
+            src={moneyImage}
+            width={185}
+            height={200}
+            x={2620}
+            y={-71}
+            shadowBlur={18}
+            shadowColor={'rgba(50, 70, 55, 0.30)'}
+            shadowOffsetY={10}
+          />
+
+          <Img
+            src={chemistryImage}
+            width={190}
+            height={139}
+            x={3000}
+            y={-50}
+            shadowBlur={20}
+            shadowColor={'rgba(52, 63, 89, 0.30)'}
+            shadowOffsetY={10}
+          />
+        </Node>
       </Node>
 
       {/* ====================================================== */}
-      {/* MOVING OBJECTS */}
+      {/* TRUCK */}
       {/* ====================================================== */}
 
-      <Node ref={objectFlow}>
-        {/* DNA box 1 */}
-
-        <Img
-          src={dnaBoxImage}
-          width={170}
-          height={127}
-          x={1100}
-          y={-78}
-          shadowBlur={18}
-          shadowColor={'rgba(35, 45, 55, 0.30)'}
-          shadowOffsetY={10}
-        />
-
-        {/* DNA box 2 */}
-
-        <Img
-          src={dnaBoxImage}
-          width={170}
-          height={127}
-          x={1480}
-          y={-78}
-          shadowBlur={18}
-          shadowColor={'rgba(35, 45, 55, 0.30)'}
-          shadowOffsetY={10}
-        />
-
-        {/* DNA box 3 */}
-
-        <Img
-          src={dnaBoxImage}
-          width={170}
-          height={127}
-          x={1860}
-          y={-78}
-          shadowBlur={18}
-          shadowColor={'rgba(35, 45, 55, 0.30)'}
-          shadowOffsetY={10}
-        />
-
-        {/* Plant cell — lowered */}
-
-        <Img
-          src={plantCellImage}
-          width={155}
-          height={155}
-          x={2240}
-          y={-58}
-          shadowBlur={20}
-          shadowColor={'rgba(48, 80, 58, 0.30)'}
-          shadowOffsetY={10}
-        />
-
-        {/* Money stack */}
-
-        <Img
-          src={moneyImage}
-          width={185}
-          height={112}
-          x={2620}
-          y={-71}
-          shadowBlur={18}
-          shadowColor={'rgba(50, 70, 55, 0.30)'}
-          shadowOffsetY={10}
-        />
-
-        {/* Beakers — lowered */}
-
-        <Img
-          src={chemistryImage}
-          width={190}
-          height={139}
-          x={3000}
-          y={-50}
-          shadowBlur={20}
-          shadowColor={'rgba(52, 63, 89, 0.30)'}
-          shadowOffsetY={10}
-        />
-      </Node>
+      <Img
+        ref={truck}
+        src={truckImage}
+        width={2050}
+        height={1507}
+        x={-1180}
+        y={55}
+      />
     </Node>,
   );
 
   // ============================================================
-  // CONVEYOR ENTRANCE
+  // INITIAL VALUES
   // ============================================================
 
-  conveyorGroup().opacity(0);
-  conveyorGroup().scale(0.94);
+  // Start the truck and conveyor below the screen.
+  truck().y(955);
+  productionSystem().y(900);
+
+  objectFlow().x(0);
+  upperTracks().x(0);
+  lowerTracks().x(0);
+
+  // ============================================================
+  // SLIDE IN FROM THE BOTTOM
+  // ============================================================
 
   yield* all(
-    conveyorGroup().opacity(1, 0.8),
-    conveyorGroup().scale(1, 1, easeInOutCubic),
+    truck().y(55, 1.2, easeInOutCubic),
+    productionSystem().y(0, 1.2, easeInOutCubic),
   );
 
   yield* waitFor(0.4);
 
   // ============================================================
-  // SLOW RIGHT-TO-LEFT MOVEMENT
+  // PRODUCTION MOVEMENT
   // ============================================================
 
-  objectFlow().x(0);
-  tankTracks().x(0);
-
   yield* all(
-    /*
-     * Objects now take 16 seconds instead of 10 seconds.
-     */
+    objectFlow().x(
+      -objectTravelDistance,
+      movementDuration,
+      linear,
+    ),
 
-    objectFlow().x(-4200, 16, linear),
+    loop(20, () =>
+      upperTracks().x(
+        upperTracks().x() - 40,
+        0.8,
+        linear,
+      ),
+    ),
 
-    /*
-     * Vertical track lines travel slowly from right to left.
-     */
-
-    tankTracks().x(-480, 16, linear),
-
-    /*
-     * Each roller completes two rotations over 16 seconds.
-     * The previous version completed four rotations in 10 seconds.
-     */
+    loop(20, () =>
+      lowerTracks().x(
+        lowerTracks().x() + 40,
+        0.8,
+        linear,
+      ),
+    ),
 
     ...rollers.map(roller =>
-      roller().rotation(-720, 16, linear),
+      roller().rotation(
+        matchedRollerRotation,
+        movementDuration,
+        linear,
+      ),
     ),
   );
 
