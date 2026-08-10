@@ -13,4 +13,11 @@ Introduction/Format:
 
 Motion Canvas Details:
   - npm start = host a local server
-  - To edit the amount of scenes available, you must adjust the default setting in project.ts 
+  - To edit the amount of scenes available, you must adjust the default setting in project.ts
+
+Things to do if needed:
+  - change the size of certain assests
+  - change the color of anything needed
+  - change speed, camera movement, etc.
+
+    This is essentially a really solid template that you can continue customizing on your own. If unsure, ask ChatGPT!
