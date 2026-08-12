@@ -7,6 +7,8 @@ import sceneTwo from './scenes/sceneTwo?scene';
 import sceneThree from './scenes/sceneThree?scene';
 import sceneFour from './scenes/sceneFour?scene';
 
+import projectLogo from './scenes/projectLogo?scene';
+
 export default makeProject({
-  scenes: [sceneFour]
+  scenes: [projectLogo]
 });
