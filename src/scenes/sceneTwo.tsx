@@ -264,7 +264,8 @@ export default makeScene2D(function* (view) {
   // ============================================================
 
   function* animateProductBuildup() {
-    yield* waitFor(3.6);
+    // The cell is now the final production stage on the conveyor.
+    yield* waitFor(6.3);
 
     yield* sequence(
       0.3,
@@ -352,8 +353,7 @@ export default makeScene2D(function* (view) {
   // ============================================================
 
   function* animateHighCostsArrow() {
-    // Starts earlier than the previous version.
-    yield* waitFor(7.2);
+    yield* waitFor(5.75);
 
     highCostsArrow().opacity(1);
 
@@ -595,7 +595,7 @@ export default makeScene2D(function* (view) {
 
           {/* MOVING CELL */}
 
-          <Node ref={movingCell} x={1840} y={-75}>
+          <Node ref={movingCell} x={2550} y={-75}>
             <Img
               src={plantCellImage}
               width={155}
@@ -657,7 +657,7 @@ export default makeScene2D(function* (view) {
               [67, 20],
               [145, -83],
             ]}
-            x={2220}
+            x={1840}
             y={-105}
             stroke={'#F01818'}
             lineWidth={29}
@@ -679,7 +679,7 @@ export default makeScene2D(function* (view) {
             src={moneyImage}
             width={185}
             height={200}
-            x={2220}
+            x={1840}
             y={-62}
             filters={[
               saturate(2),
@@ -697,7 +697,7 @@ export default makeScene2D(function* (view) {
 
           <Node
             ref={beakerOne}
-            x={2529}
+            x={2149}
             y={-60}
           >
             <Rect
@@ -756,7 +756,7 @@ export default makeScene2D(function* (view) {
 
           <Node
             ref={beakerTwo}
-            x={2576}
+            x={2196}
             y={-60}
           >
             <Rect
@@ -815,7 +815,7 @@ export default makeScene2D(function* (view) {
 
           <Node
             ref={beakerThree}
-            x={2624}
+            x={2244}
             y={-60}
           >
             <Rect
@@ -874,7 +874,7 @@ export default makeScene2D(function* (view) {
 
           <Node
             ref={beakerFour}
-            x={2671}
+            x={2291}
             y={-60}
           >
             <Rect
@@ -1086,10 +1086,10 @@ export default makeScene2D(function* (view) {
 
     // The production section begins about 3.1 seconds into the full scene,
     // so these delays begin the steam and matching shakes around 11 seconds.
-    animateBeakerAndSteam(beakerOne, steamOne, 7.85, -1),
-    animateBeakerAndSteam(beakerTwo, steamTwo, 8, 1),
-    animateBeakerAndSteam(beakerThree, steamThree, 8.15, -1),
-    animateBeakerAndSteam(beakerFour, steamFour, 8.3, 1),
+    animateBeakerAndSteam(beakerOne, steamOne, 6.4, -1),
+    animateBeakerAndSteam(beakerTwo, steamTwo, 6.55, 1),
+    animateBeakerAndSteam(beakerThree, steamThree, 6.7, -1),
+    animateBeakerAndSteam(beakerFour, steamFour, 6.85, 1),
 
     loop(20, function* () {
       yield* upperTracks().x(

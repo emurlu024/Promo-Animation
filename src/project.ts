@@ -10,5 +10,5 @@ import sceneFour from './scenes/sceneFour?scene';
 import projectLogo from './scenes/projectLogo?scene';
 
 export default makeProject({
-  scenes: [projectLogo]
+  scenes: [sceneTwo]
 });
